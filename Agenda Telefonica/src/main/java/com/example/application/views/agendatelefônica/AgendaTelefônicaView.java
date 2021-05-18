@@ -108,16 +108,6 @@ public class AgendaTelefônicaView extends Div implements BeforeEnterObserver {
         });
 
         delete.addClickListener(e ->{
-//            Pessoa p = new Pessoa();
-//            p.setNome(nome.getValue());
-//            p.setSobrenome(sobrenome.getValue());
-//            p.setData_nascimento(data_nascimento.getValue());
-//            p.setParentesco(parentesco.getValue());
-//            p.setContato(contato.getValue());
-//            p.setContato_2(contato_2.getValue());
-//            p.setContato_3(contato_3.getValue());
-
-            //binder.readBean(this.pessoa);
 
             if(pessoa == null){
                 Notification.show("Nenhum cadastro selecionado");
@@ -142,18 +132,30 @@ public class AgendaTelefônicaView extends Div implements BeforeEnterObserver {
                 }
 
                 binder.writeBean(this.pessoa);
-
                 PessoaDao dao = new PessoaDao();
-                if(dao.add(pessoa)){
-                    Notification.show("Cadastrado");
-                    System.out.println("Cadastrado");
+                if(pessoa.getId() == null){
+
+                    if(dao.add(pessoa)){
+                        Notification.show("Cadastrado");
+                        System.out.println("Cadastrado");
+                    }else{
+                        Notification.show("Não Cadastrado");
+                        System.out.println("Não Cadastrado");
+                    }
                 }else{
-                    Notification.show("Não Cadastrado");
-                    System.out.println("Não Cadastrado");
+                    if(dao.update(pessoa)){
+                        Notification.show("Alterado");
+                        System.out.println("Alterado");
+                    }else{
+                        Notification.show("Não Alterado");
+                        System.out.println("Não Alterado");
+                    }
+
                 }
+
+
                 clearForm();
                 popularGrid();
-                Notification.show("Pessoa details stored.");
                 UI.getCurrent().navigate(AgendaTelefônicaView.class);
             } catch (ValidationException validationException) {
                 Notification.show("An exception happened while trying to store the pessoa details.");
@@ -248,5 +250,9 @@ public class AgendaTelefônicaView extends Div implements BeforeEnterObserver {
         clearForm();
         grid.setItems(pessoas);
 
+    }
+
+    private void validacao(){
+        
     }
 }

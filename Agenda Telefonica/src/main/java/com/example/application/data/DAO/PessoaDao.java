@@ -48,17 +48,20 @@ public class PessoaDao {
     }
 
     public boolean update(Pessoa p){
-        String sql = "UPDATE tb_pessoa SET nome = ?,sobrenome = ?, data_nascimento = '";
-        LocalDate sql1 = p.getData_nascimento();
-        String sql2 = "', parentesco = ? WHERE id=?;";
+        String sql = "UPDATE tb_pessoa SET nome = ?,sobrenome = ?, data_nascimento = ? ,contato = ?, contato1 = ?, contato2 = ?, parentesco = ? WHERE id=?;";
+
 
 
         try{
-            PreparedStatement stmt = con.prepareStatement(sql+sql1+sql2);
+            PreparedStatement stmt = con.prepareStatement(sql);
             stmt.setString(1,p.getNome());
             stmt.setString(2,p.getSobrenome());
-            stmt.setString(3,p.getParentesco());
-            stmt.setInt(4,p.getId());
+            stmt.setDate(3, Date.valueOf(p.getData_nascimento()));
+            stmt.setString(4, p.getContato());
+            stmt.setString(5, p.getContato_2());
+            stmt.setString(6, p.getContato_3());
+            stmt.setString(7,p.getParentesco());
+            stmt.setInt(8,p.getId());
             stmt.execute();
             stmt.close();
             con.close();
