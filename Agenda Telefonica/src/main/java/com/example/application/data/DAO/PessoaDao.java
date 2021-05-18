@@ -102,6 +102,9 @@ public class PessoaDao {
                 p.setNome(rs.getString("nome"));
                 p.setSobrenome(rs.getString("sobrenome"));
                 p.setData_nascimento(rs.getDate("data_nascimento").toLocalDate());
+                p.setContato(rs.getString("contato"));
+                p.setContato_2(rs.getString("contato1"));
+                p.setContato_3(rs.getString("contato2"));
                 p.setParentesco(rs.getString("parentesco"));
                 pessoas.add(p);
             }
@@ -129,6 +132,9 @@ public class PessoaDao {
                 p.setNome(rs.getString("nome"));
                 p.setSobrenome(rs.getString("sobrenome"));
                 p.setData_nascimento(rs.getDate("data_nascimento").toLocalDate());
+                p.setContato(rs.getString("contato"));
+                p.setContato_2(rs.getString("contato1"));
+                p.setContato_3(rs.getString("contato2"));
                 p.setParentesco(rs.getString("parentesco"));
                 return Optional.of(p);
             }
