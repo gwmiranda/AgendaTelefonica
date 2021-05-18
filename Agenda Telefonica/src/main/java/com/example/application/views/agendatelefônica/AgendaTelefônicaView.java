@@ -1,11 +1,10 @@
 package com.example.application.views.agendatelefônica;
 
+import java.util.List;
 import java.util.Optional;
 
 import com.example.application.data.DAO.PessoaDao;
 import com.example.application.data.entity.Pessoa;
-import com.example.application.data.service.PessoaService;
-
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.HasStyle;
@@ -25,7 +24,6 @@ import com.vaadin.flow.router.BeforeEnterObserver;
 
 import org.omg.PortableServer.IdAssignmentPolicyOperations;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.vaadin.artur.helpers.CrudServiceDataProvider;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.PageTitle;
 import com.example.application.views.main.MainView;
@@ -61,11 +59,10 @@ public class AgendaTelefônicaView extends Div implements BeforeEnterObserver {
 
     private Pessoa pessoa;
 
-    private PessoaService pessoaService;
 
-    public AgendaTelefônicaView(@Autowired PessoaService pessoaService) {
+    public AgendaTelefônicaView() {
         addClassNames("agenda-telefônica-view", "flex", "flex-col", "h-full");
-        this.pessoaService = pessoaService;
+
         // Create UI
         SplitLayout splitLayout = new SplitLayout();
         splitLayout.setSizeFull();
@@ -83,7 +80,6 @@ public class AgendaTelefônicaView extends Div implements BeforeEnterObserver {
         grid.addColumn("contato_2").setAutoWidth(true);
         grid.addColumn("contato_3").setAutoWidth(true);
         grid.addColumn("parentesco").setAutoWidth(true);
-        grid.setDataProvider(new CrudServiceDataProvider<>(pessoaService));
         grid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
         grid.setHeightFull();
 
@@ -98,6 +94,7 @@ public class AgendaTelefônicaView extends Div implements BeforeEnterObserver {
             }
         });
 
+
         // Configure Form
         binder = new BeanValidationBinder<>(Pessoa.class);
 
@@ -107,21 +104,27 @@ public class AgendaTelefônicaView extends Div implements BeforeEnterObserver {
 
         cancel.addClickListener(e -> {
             clearForm();
-            refreshGrid();
+            popularGrid();
         });
 
         delete.addClickListener(e ->{
-            Pessoa p = new Pessoa();
-            p.setNome(nome.getValue());
-            p.setSobrenome(sobrenome.getValue());
-            p.setData_nascimento(data_nascimento.getValue());
-            p.setParentesco(parentesco.getValue());
-            p.setContato(contato.getValue());
-            p.setContato_2(contato_2.getValue());
-            p.setContato_3(contato_3.getValue());
+//            Pessoa p = new Pessoa();
+//            p.setNome(nome.getValue());
+//            p.setSobrenome(sobrenome.getValue());
+//            p.setData_nascimento(data_nascimento.getValue());
+//            p.setParentesco(parentesco.getValue());
+//            p.setContato(contato.getValue());
+//            p.setContato_2(contato_2.getValue());
+//            p.setContato_3(contato_3.getValue());
 
+            //binder.readBean(this.pessoa);
+
+            if(pessoa == null){
+                Notification.show("Nenhum cadastro selecionado");
+                return;
+            }
             PessoaDao dao = new PessoaDao();
-            if(dao.delete(p)){
+            if(dao.delete(pessoa)){
                 Notification.show("Deletado");
                 System.out.println("Deletado");
             }else{
@@ -129,51 +132,43 @@ public class AgendaTelefônicaView extends Div implements BeforeEnterObserver {
                 System.out.println("Não Deletado");
             }
             clearForm();
-            refreshGrid();
+            popularGrid();
         });
 
         save.addClickListener(e -> {
             try {
                 if (this.pessoa == null) {
                     this.pessoa = new Pessoa();
-                    //////
-                    pessoa.setNome(nome.getValue());
-                    pessoa.setSobrenome(sobrenome.getValue());
-                    pessoa.setData_nascimento(data_nascimento.getValue());
-                    pessoa.setParentesco(parentesco.getValue());
-                    pessoa.setContato(contato.getValue());
-                    pessoa.setContato_2(contato_2.getValue());
-                    pessoa.setContato_3(contato_3.getValue());
-
-                    PessoaDao dao = new PessoaDao();
-                    if(dao.add(pessoa)){
-                        Notification.show("Cadastrado");
-                        System.out.println("Cadastrado");
-                    }else{
-                        Notification.show("Não Cadastrado");
-                        System.out.println("Não Cadastrado");
-                    }
-
                 }
+
                 binder.writeBean(this.pessoa);
 
-                pessoaService.update(this.pessoa);
+                PessoaDao dao = new PessoaDao();
+                if(dao.add(pessoa)){
+                    Notification.show("Cadastrado");
+                    System.out.println("Cadastrado");
+                }else{
+                    Notification.show("Não Cadastrado");
+                    System.out.println("Não Cadastrado");
+                }
                 clearForm();
-                refreshGrid();
+                popularGrid();
                 Notification.show("Pessoa details stored.");
                 UI.getCurrent().navigate(AgendaTelefônicaView.class);
             } catch (ValidationException validationException) {
                 Notification.show("An exception happened while trying to store the pessoa details.");
             }
+            popularGrid();
         });
-
+        popularGrid();
     }
 
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
         Optional<Integer> pessoaId = event.getRouteParameters().getInteger(PESSOA_ID);
+        PessoaDao pessoaDao = new PessoaDao();
         if (pessoaId.isPresent()) {
-            Optional<Pessoa> pessoaFromBackend = pessoaService.get(pessoaId.get());
+            Optional<Pessoa> pessoaFromBackend = pessoaDao.getIdPessoa(pessoaId.get());
             if (pessoaFromBackend.isPresent()) {
                 populateForm(pessoaFromBackend.get());
             } else {
@@ -181,7 +176,7 @@ public class AgendaTelefônicaView extends Div implements BeforeEnterObserver {
                         Notification.Position.BOTTOM_START);
                 // when a row is selected but the data is no longer available,
                 // refresh grid
-                refreshGrid();
+                popularGrid();
                 event.forwardTo(AgendaTelefônicaView.class);
             }
         }
@@ -235,10 +230,7 @@ public class AgendaTelefônicaView extends Div implements BeforeEnterObserver {
         wrapper.add(grid);
     }
 
-    private void refreshGrid() {
-        grid.select(null);
-        grid.getDataProvider().refreshAll();
-    }
+
 
     private void clearForm() {
         populateForm(null);
@@ -247,6 +239,14 @@ public class AgendaTelefônicaView extends Div implements BeforeEnterObserver {
     private void populateForm(Pessoa value) {
         this.pessoa = value;
         binder.readBean(this.pessoa);
+
+    }
+
+    private void popularGrid(){
+        PessoaDao dao = new PessoaDao();
+        List<Pessoa> pessoas = dao.GetlList();
+        clearForm();
+        grid.setItems(pessoas);
 
     }
 }
